@@ -10,7 +10,7 @@ class TestPathfinder(TestCase):
         destination = (0, 3)
         obstacles = []
 
-        path = Pathfinder().findPath(start, destination, obstacles)
+        path = Pathfinder().find_path(start, destination, obstacles)
 
         self.assertEqual(path, [(0,3)])
 
