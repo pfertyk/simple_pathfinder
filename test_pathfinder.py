@@ -29,6 +29,16 @@ class TestFindingPath(TestCase):
         path = find_path(unit, destination, obstacles)
         self.assertEquals(path, None)
 
+    def test_two_obstacles(self):
+        unit = RectangularUnit(Point(0, 0), 0.5, 0.5)
+        destination = Point(5, 0)
+        obstacles = [
+            RectangularObstacle(-3, 0.5, 1, 2),
+            RectangularObstacle(-0.5, 3, 3, 4)
+        ]
+        path = find_path(unit, destination, obstacles)
+        self.assertEquals(path, [Point(0.5, 1), Point(2.5, 1), Point(2.5, -1), Point(4.5, -1), Point(5, 0)])
+
 
 class TestObstacleCrossing(TestCase):
     def test_through_the_middle(self):
