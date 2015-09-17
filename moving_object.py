@@ -1,5 +1,5 @@
 from tkinter import *
-from pathfinder import Point, RectangularObstacle, RectangularUnit
+from pathfinder import Point, RectangularObstacle, RectangularUnit, find_path
 import numpy as np
 
 
@@ -52,7 +52,7 @@ class MovingObjects(object):
 
     def clicked(self, event):
         print('Clicked: ', event.x, event.y)
-        self.path.append(Point(event.x, event.y))
+        self.path = find_path(self.player, Point(event.x, event.y), self.obstacles)
 
     def close(self, event):
         self.master.destroy()
