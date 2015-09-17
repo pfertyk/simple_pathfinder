@@ -7,9 +7,10 @@ class MovingObjects(object):
     def __init__(self):
         self.obstacles = [RectangularObstacle(200, 500, 300, 400)]
         self.player = RectangularUnit(Point(100, 100), 25, 25)
-        self.velocity = 1.0
+        self.velocity = 4.0
         self.path = []
         self.destination = Point(200, 200)  # remove this
+        self.fps = 25
 
         self.master = Tk()
         self.canvas = Canvas(self.master, width=800, height=600)
@@ -17,7 +18,11 @@ class MovingObjects(object):
 
         for ob in self.obstacles:
             self.canvas.create_rectangle(ob.left, ob.up, ob.right, ob.down, fill="blue")
-        self.player_rectangle = self.canvas.create_rectangle(100, 100, 10, 10, fill="green")
+        self.player_rectangle = self.canvas.create_rectangle(
+            self.player.position.x - self.player.size_x,
+            self.player.position.y - self.player.size_y,
+            self.player.position.x + self.player.size_x,
+            self.player.position.y + self.player.size_y, fill="green")
 
         self.canvas.pack()
         self.master.after(0, self.animate)
@@ -31,8 +36,19 @@ class MovingObjects(object):
             d = np.subtract(self.destination, self.player.position)
             d_len = np.linalg.norm(d)
 
-        self.canvas.move(self.player_rectangle, self.velocity, self.velocity)
-        self.master.after(100, self.animate)
+            if d_len < self.velocity:
+                self.destination = None
+            else:
+                d = np.divide(d, d_len)
+                d = np.multiply(d, self.velocity)
+
+            new_position = np.add(self.player.position, d)
+            new_position = Point(*new_position)
+            int_x = int(new_position.x) - int(self.player.position.x)
+            int_y = int(new_position.y) - int(self.player.position.y)
+            self.player = RectangularUnit(new_position, self.player.size_x, self.player.size_y)
+            self.canvas.move(self.player_rectangle, int_x, int_y)
+        self.master.after(int(1000 / self.fps), self.animate)
 
     def clicked(self, event):
         print('Clicked: ', event.x, event.y)
