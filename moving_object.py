@@ -7,9 +7,8 @@ class MovingObjects(object):
     def __init__(self):
         self.obstacles = [RectangularObstacle(200, 500, 300, 400)]
         self.player = RectangularUnit(Point(100, 100), 25, 25)
-        self.velocity = 4.0
+        self.velocity = 8.0
         self.path = []
-        self.destination = Point(200, 200)  # remove this
         self.fps = 25
 
         self.master = Tk()
@@ -32,12 +31,13 @@ class MovingObjects(object):
         self.master.mainloop()
 
     def animate(self):
-        if self.destination:
-            d = np.subtract(self.destination, self.player.position)
+        if self.path:
+            next_point = self.path[0]
+            d = np.subtract(next_point, self.player.position)
             d_len = np.linalg.norm(d)
 
             if d_len < self.velocity:
-                self.destination = None
+                self.path.pop(0)
             else:
                 d = np.divide(d, d_len)
                 d = np.multiply(d, self.velocity)
@@ -52,7 +52,7 @@ class MovingObjects(object):
 
     def clicked(self, event):
         print('Clicked: ', event.x, event.y)
-        self.destination = Point(event.x, event.y)
+        self.path.append(Point(event.x, event.y))
 
     def close(self, event):
         self.master.destroy()
