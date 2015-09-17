@@ -9,6 +9,8 @@ from queue import Queue
 # TODO: eliminate duplicate points!
 # TODO: empty path instead of None?
 # TODO: return tuples or Points?
+# TODO: test for destination inside obstacle
+# TODO: test for current obstacles and destination: 607, 324
 RectangularObstacle = namedtuple('RectangularObstacle', 'up down left right')
 RectangularUnit = namedtuple('RectangularUnit', 'position, size_x, size_y')
 Point = namedtuple('Point', 'x y')

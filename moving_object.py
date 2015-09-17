@@ -5,8 +5,19 @@ import numpy as np
 
 class MovingObjects(object):
     def __init__(self):
-        self.obstacles = [RectangularObstacle(200, 500, 300, 400)]
-        self.player = RectangularUnit(Point(100, 100), 25, 25)
+        self.obstacles = [
+            RectangularObstacle(70, 90, 70, 700),
+            RectangularObstacle(90, 510, 70, 90),
+            RectangularObstacle(510, 530, 70, 400),
+            RectangularObstacle(90, 300, 680, 700),
+            RectangularObstacle(370, 540, 680, 700),
+            RectangularObstacle(150, 360, 160, 180),
+            RectangularObstacle(150, 170, 180, 380),
+            RectangularObstacle(150, 290, 380, 400),
+            RectangularObstacle(290, 310, 290, 550),
+            RectangularObstacle(310, 500, 500, 520),
+        ]
+        self.player = RectangularUnit(Point(30, 30), 25, 25)
         self.velocity = 8.0
         self.path = []
         self.fps = 25
