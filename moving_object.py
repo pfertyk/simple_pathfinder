@@ -68,58 +68,5 @@ class MovingObjects(object):
     def close(self, event):
         self.master.destroy()
 
-#
-# def move_player(event):
-#     delta_movement = 7
-#     x = 0
-#     y = 0
-#
-#     if event.char == 'a':
-#         x = -delta_movement
-#     elif event.char == 'd':
-#         x = delta_movement
-#     elif event.char == 'w':
-#         y = -delta_movement
-#     elif event.char == 's':
-#         y = delta_movement
-#
-#     bbox = w.bbox(pl)
-#
-#     if x > 0:
-#         edge = bbox[2]
-#         ob_min = 100000
-#         for ob in obstacles:
-#             ob_coord = ob[0]
-#             if ob_coord < ob_min and ob_coord >= edge and not (ob[1] > bbox[3] or (ob[1] + ob[3]) < bbox[1]):
-#                 ob_min = ob_coord
-#         x = min(x, ob_min - edge)
-#     elif x < 0:
-#         edge = bbox[0]
-#         ob_max = -100000
-#         for ob in obstacles:
-#             ob_coord = ob[0] + ob[2]
-#             if ob_coord > ob_max and ob_coord <= edge and not (ob[1] > bbox[3] or (ob[1] + ob[3]) < bbox[1]):
-#                 ob_max = ob_coord
-#         x = max(x, ob_max - edge)
-#
-#     if y > 0:
-#         edge = bbox[3]
-#         ob_min = 100000
-#         for ob in obstacles:
-#             ob_coord = ob[1]
-#             if ob_coord < ob_min and ob_coord >= edge and not (ob[0] > bbox[2] or (ob[0] + ob[2]) < bbox[0]):
-#                 ob_min = ob_coord
-#         y = min(y, ob_min - edge)
-#     elif y < 0:
-#         edge = bbox[1]
-#         ob_max = -100000
-#         for ob in obstacles:
-#             ob_coord = ob[1] + ob[3]
-#             if ob_coord > ob_max and ob_coord <= edge and not (ob[0] > bbox[2] or (ob[0] + ob[2]) < bbox[0]):
-#                 ob_max = ob_coord
-#         y = max(y, ob_max - edge)
-#
-#     w.move(pl, x, y)
-
 if __name__ == '__main__':
     MovingObjects()
