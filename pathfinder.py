@@ -11,6 +11,8 @@ from queue import Queue
 # TODO: return tuples or Points?
 # TODO: test for destination inside obstacle
 # TODO: test for current obstacles and destination: 607, 324
+# TODO: test: Clicked:  119 440 Clicked:  744 56 Clicked:  67 120 Clicked:  107 152 Clicked:  114 148 Clicked:  120 304
+# TODO: test: Clicked:  315 576 Clicked:  458 228 Clicked:  234 444
 RectangularObstacle = namedtuple('RectangularObstacle', 'up down left right')
 RectangularUnit = namedtuple('RectangularUnit', 'position, size_x, size_y')
 Point = namedtuple('Point', 'x y')
@@ -101,22 +103,23 @@ def line_crosses_obstacle(p1, p2, obstacle):
         d = np.divide(d, d_len)
         d = Point(*d)
 
-        ax = np.divide(1, d.x)
-        ay = np.divide(1, d.y)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            ax = np.divide(1, d.x)
+            ay = np.divide(1, d.y)
 
-        if ax >= 0:
-            txmin = np.multiply(ax, obstacle.left - e.x)
-            txmax = np.multiply(ax, obstacle.right - e.x)
-        else:
-            txmin = np.multiply(ax, obstacle.right - e.x)
-            txmax = np.multiply(ax, obstacle.left - e.x)
+            if ax >= 0:
+                txmin = np.multiply(ax, obstacle.left - e.x)
+                txmax = np.multiply(ax, obstacle.right - e.x)
+            else:
+                txmin = np.multiply(ax, obstacle.right - e.x)
+                txmax = np.multiply(ax, obstacle.left - e.x)
 
-        if ay >= 0:
-            tymin = np.multiply(ay, obstacle.up - e.y)
-            tymax = np.multiply(ay, obstacle.down - e.y)
-        else:
-            tymin = np.multiply(ay, obstacle.down - e.y)
-            tymax = np.multiply(ay, obstacle.up - e.y)
+            if ay >= 0:
+                tymin = np.multiply(ay, obstacle.up - e.y)
+                tymax = np.multiply(ay, obstacle.down - e.y)
+            else:
+                tymin = np.multiply(ay, obstacle.down - e.y)
+                tymax = np.multiply(ay, obstacle.up - e.y)
 
         return txmin < tymax and tymin < txmax and txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
 
