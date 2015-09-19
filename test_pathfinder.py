@@ -39,6 +39,16 @@ class TestFindingPath(TestCase):
         path = find_path(unit, destination, obstacles)
         self.assertEquals(path, [Point(0.5, 1), Point(2.5, 1), Point(2.5, -1), Point(4.5, -1), Point(5, 0)])
 
+    def test_shortest_path(self):
+        unit = RectangularUnit(Point(750, 290), 25, 25)
+        destination = Point(607, 324)
+        obstacles = [
+            RectangularObstacle(90, 300, 680, 700),
+            RectangularObstacle(290, 310, 290, 550)
+        ]
+        path = find_path(unit, destination, obstacles)
+        self.assertEquals(path, [Point(725, 325), Point(655, 325), Point(607, 324)])
+
 
 class TestObstacleCrossing(TestCase):
     def test_through_the_middle(self):

@@ -4,15 +4,14 @@ import itertools
 from queue import Queue
 
 # TODO: better names for fields in Unit?
-# TODO: svg visualization of found paths
-# TODO: turn off warning 'divide by zero'
 # TODO: eliminate duplicate points!
 # TODO: empty path instead of None?
 # TODO: return tuples or Points?
 # TODO: test for destination inside obstacle
-# TODO: test for current obstacles and destination: 607, 324
 # TODO: test: Clicked:  119 440 Clicked:  744 56 Clicked:  67 120 Clicked:  107 152 Clicked:  114 148 Clicked:  120 304
 # TODO: test: Clicked:  315 576 Clicked:  458 228 Clicked:  234 444
+# TODO: serious optimalization (caching? better algorithm? other data structures?)
+# TODO: tower defense game
 RectangularObstacle = namedtuple('RectangularObstacle', 'up down left right')
 RectangularUnit = namedtuple('RectangularUnit', 'position, size_x, size_y')
 Point = namedtuple('Point', 'x y')
@@ -49,8 +48,9 @@ def find_path_using_graph(position, destination, connections):
 
         while current_distance > 0:
             connected_points = connections[current_point]
-            min_distance = min(distances[point] for point in connected_points)
-            current_point = next(point for point in connected_points if distances[point] == min_distance)
+            current_point = next(
+                point for point in connected_points if np.allclose(
+                    distances[point], current_distance - np.linalg.norm(np.subtract(current_point, point)), rtol=0))
             path.append(current_point)
             current_distance = distances[current_point]
     else:
