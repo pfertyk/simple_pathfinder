@@ -6,46 +6,46 @@ class TestFindingPath(TestCase):
     def test_no_obstacles(self):
         unit = RectangularUnit(Point(0, 0), 0.5, 0.5)
         destination = Point(3, 0)
-        obstacles = []
+        obstacles = ()
         path = find_path(unit, destination, obstacles)
         self.assertEqual(path, [(3, 0)])
 
     def test_one_obstacle(self):
         unit = RectangularUnit(Point(0, 0), 0.5, 0.5)
         destination = Point(5, 0)
-        obstacles = [RectangularObstacle(-3, 1, 2, 3)]
+        obstacles = tuple() + (RectangularObstacle(-3, 1, 2, 3), )
         path = find_path(unit, destination, obstacles)
         self.assertEquals(path, [Point(1.5, 1.5), Point(3.5, 1.5), Point(5, 0)])
 
     def test_no_path(self):
         unit = RectangularUnit(Point(0, 0), 0.5, 0.5)
         destination = Point(3, 0)
-        obstacles = [
+        obstacles = (
             RectangularObstacle(-1, 1, 1, 2),
             RectangularObstacle(-1, 1, 4, 5),
             RectangularObstacle(1, 2, 2, 4),
             RectangularObstacle(-2, -1, 2, 4)
-        ]
+        )
         path = find_path(unit, destination, obstacles)
         self.assertEquals(path, None)
 
     def test_two_obstacles(self):
         unit = RectangularUnit(Point(0, 0), 0.5, 0.5)
         destination = Point(5, 0)
-        obstacles = [
+        obstacles = (
             RectangularObstacle(-3, 0.5, 1, 2),
             RectangularObstacle(-0.5, 3, 3, 4)
-        ]
+        )
         path = find_path(unit, destination, obstacles)
         self.assertEquals(path, [Point(0.5, 1), Point(2.5, 1), Point(2.5, -1), Point(4.5, -1), Point(5, 0)])
 
     def test_shortest_path(self):
         unit = RectangularUnit(Point(750, 290), 25, 25)
         destination = Point(607, 324)
-        obstacles = [
+        obstacles = (
             RectangularObstacle(90, 300, 680, 700),
             RectangularObstacle(290, 310, 290, 550)
-        ]
+        )
         path = find_path(unit, destination, obstacles)
         self.assertEquals(path, [Point(725, 325), Point(655, 325), Point(607, 324)])
 

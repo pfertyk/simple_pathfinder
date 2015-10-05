@@ -1,11 +1,12 @@
 from tkinter import *
 from pathfinder import Point, RectangularObstacle, RectangularUnit, find_path
 import numpy as np
+import time
 
 
 class MovingObjects(object):
     def __init__(self):
-        self.obstacles = [
+        self.obstacles = (
             RectangularObstacle(70, 90, 70, 700),
             RectangularObstacle(90, 510, 70, 90),
             RectangularObstacle(510, 530, 70, 400),
@@ -16,7 +17,7 @@ class MovingObjects(object):
             RectangularObstacle(150, 290, 380, 400),
             RectangularObstacle(290, 310, 290, 550),
             RectangularObstacle(310, 500, 500, 520),
-        ]
+        )
         self.player = RectangularUnit(Point(30, 30), 25, 25)
         self.velocity = 8.0
         self.path = []
@@ -63,7 +64,10 @@ class MovingObjects(object):
 
     def clicked(self, event):
         print('Clicked: ', event.x, event.y)
+        start = time.time()
         self.path = find_path(self.player, Point(event.x, event.y), self.obstacles)
+        end = time.time()
+        print(end-start)
 
     def close(self, event):
         self.master.destroy()
