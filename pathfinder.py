@@ -5,13 +5,10 @@ import functools
 
 # TODO: better names for fields in Unit?
 # TODO: eliminate duplicate points!
-# TODO: empty path instead of None?
-# TODO: return tuples or Points?
 # TODO: test for destination inside obstacle
 # TODO: test: Clicked:  119 440 Clicked:  744 56 Clicked:  67 120 Clicked:  107 152 Clicked:  114 148 Clicked:  120 304
 # TODO: test: Clicked:  315 576 Clicked:  458 228 Clicked:  234 444
-# TODO: serious optimalization (caching? better algorithm? other data structures?)
-# TODO: tower defense game
+# TODO: documentation!
 RectangularObstacle = namedtuple('RectangularObstacle', 'up down left right')
 RectangularUnit = namedtuple('RectangularUnit', 'position, size_x, size_y')
 Point = namedtuple('Point', 'x y')
@@ -29,13 +26,11 @@ def find_path(unit, destination, obstacles):
 
 
 def my_cache_wrapper(func):
-    print('init wrapper')
     cache = {}
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if (func, args, str(kwargs)) in cache:
-            print('found in cache')
             return cache[(func, args, str(kwargs))]
         else:
             tmp = func(*args, **kwargs)
@@ -173,19 +168,3 @@ def line_crosses_obstacle(p1, p2, obstacle):
                 tymax = np.multiply(ay, obstacle.up - e.y)
 
         return txmin < tymax and tymin < txmax and txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
-
-if __name__ == '__main__':
-    print('Hello!')
-    print(np.divide(1, 0))
-    print(np.divide(-1.0, 0.0))
-    print(np.divide(0.0, 0.0))
-    p = Point(4, 3)
-    l = np.linalg.norm(p)
-    print(l)
-    p /= l
-    print(p)
-    o = RectangularObstacle(1, 2, 3, 4)
-    print([Point(x, y) for x, y in itertools.product([o.left, o.right], [o.up, o.down])])
-    for elem in range(2, 1):
-        print('Hello!' + elem)
-    print(range(2, 1))
