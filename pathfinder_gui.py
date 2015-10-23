@@ -1,6 +1,5 @@
 from tkinter import *
-from pathfinder import Point, RectangularObstacle, RectangularUnit, find_path
-import numpy as np
+from pathfinder import Point, RectangularObstacle, RectangularUnit, find_path, move_point_along_the_path
 import time
 
 
@@ -26,46 +25,45 @@ class PathfinderGUI(object):
 
         self.master = Tk()
         self.master.wm_title('Left click to point destination, Esc to exit')
-        self.master.after(0, self.move_agent_along_path)
 
         self.canvas = Canvas(self.master, width=800, height=600)
 
         for ob in self.obstacles:
-            self.canvas.create_rectangle(ob.left, ob.up, ob.right, ob.down, fill="blue")
+            self.canvas.create_rectangle(ob.left, ob.up, ob.right, ob.down, fill='blue')
 
-        self.player_rectangle = self.canvas.create_rectangle(
-            self.agent.position.x - self.agent.size_x,
-            self.agent.position.y - self.agent.size_y,
-            self.agent.position.x + self.agent.size_x,
-            self.agent.position.y + self.agent.size_y, fill="green")
+        self.player_rectangle = self.canvas.create_rectangle(0, 0, 1, 1, fill='green', tags='agent')
+        self.redraw_agent()
 
         self.canvas.pack()
         self.canvas.bind('<Button-1>', self.calculate_new_path)
         self.canvas.master.bind('<Escape>', self.close_window)
         self.canvas.focus_set()
 
+        self.is_drawing = False
+
         self.master.mainloop()
 
     def move_agent_along_path(self):
+        self.is_drawing = True
+
         if self.path:
-            next_point = self.path[0]
-            d = np.subtract(next_point, self.agent.position)
-            d_len = np.linalg.norm(d)
-
-            if d_len < self.velocity:
-                self.path.pop(0)
-            else:
-                d = np.divide(d, d_len)
-                d = np.multiply(d, self.velocity)
-
-            new_position = np.add(self.agent.position, d)
-            new_position = Point(*new_position)
-            int_x = int(new_position.x) - int(self.agent.position.x)
-            int_y = int(new_position.y) - int(self.agent.position.y)
+            new_position, new_path = move_point_along_the_path(self.agent.position, self.path, self.velocity)
+            self.path = new_path
             self.agent = RectangularUnit(new_position, self.agent.size_x, self.agent.size_y)
-            self.canvas.move(self.player_rectangle, int_x, int_y)
+            self.redraw_agent()
 
-        self.master.after(int(1000 / self.fps), self.move_agent_along_path)
+        if self.path:
+            self.master.after(int(1000 / self.fps), self.move_agent_along_path)
+        else:
+            self.is_drawing = False
+
+    def redraw_agent(self):
+        self.canvas.coords(
+            'agent',
+            self.agent.position.x - self.agent.size_x,
+            self.agent.position.y - self.agent.size_y,
+            self.agent.position.x + self.agent.size_x,
+            self.agent.position.y + self.agent.size_y)
 
     def calculate_new_path(self, event):
         print('Selected destination: ', event.x, event.y)
@@ -74,8 +72,10 @@ class PathfinderGUI(object):
         time1 = time.time()
         self.path = find_path(self.agent, destination, self.obstacles)
         time2 = time.time()
-
         print('Calculating path took %f s' % (time2 - time1))
+
+        if not self.is_drawing:
+            self.move_agent_along_path()
 
     def close_window(self, event):
         self.master.destroy()

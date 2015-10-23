@@ -8,6 +8,8 @@ import functools
 # TODO: test for destination inside obstacle
 # TODO: test: Clicked:  119 440 Clicked:  744 56 Clicked:  67 120 Clicked:  107 152 Clicked:  114 148 Clicked:  120 304
 # TODO: test: Clicked:  315 576 Clicked:  458 228 Clicked:  234 444
+# TODO: test: Clicked:  284 221
+# TODO: test: Clicked:  482 231
 # TODO: documentation!
 RectangularObstacle = namedtuple('RectangularObstacle', 'up down left right')
 RectangularUnit = namedtuple('RectangularUnit', 'position, size_x, size_y')
@@ -168,3 +170,21 @@ def line_crosses_obstacle(p1, p2, obstacle):
                 tymax = np.multiply(ay, obstacle.up - e.y)
 
         return txmin < tymax and tymin < txmax and txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
+
+
+def move_point_along_the_path(point, path, velocity):
+    new_path = list(path)
+    next_point = new_path[0]
+    d = np.subtract(next_point, point)
+    d_len = np.linalg.norm(d)
+
+    if d_len < velocity:
+        new_path.pop(0)
+    else:
+        d = np.divide(d, d_len)
+        d = np.multiply(d, velocity)
+
+    new_position = np.add(point, d)
+    new_position = Point(*new_position)
+
+    return new_position, new_path
