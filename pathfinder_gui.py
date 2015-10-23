@@ -24,6 +24,7 @@ class MovingObjects(object):
         self.fps = 25
 
         self.master = Tk()
+        self.master.wm_title('Left click to point destination, Esc to exit')
         self.canvas = Canvas(self.master, width=800, height=600)
         self.canvas.pack()
 
