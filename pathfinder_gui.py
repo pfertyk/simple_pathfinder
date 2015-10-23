@@ -26,7 +26,7 @@ class PathfinderGUI(object):
 
         self.master = Tk()
         self.master.wm_title('Left click to point destination, Esc to exit')
-        self.master.after(0, self.animate)
+        self.master.after(0, self.move_agent_along_path)
 
         self.canvas = Canvas(self.master, width=800, height=600)
 
@@ -40,13 +40,13 @@ class PathfinderGUI(object):
             self.agent.position.y + self.agent.size_y, fill="green")
 
         self.canvas.pack()
-        self.canvas.bind('<Button-1>', self.clicked)
+        self.canvas.bind('<Button-1>', self.calculate_new_path)
         self.canvas.master.bind('<Escape>', self.close_window)
         self.canvas.focus_set()
 
         self.master.mainloop()
 
-    def animate(self):
+    def move_agent_along_path(self):
         if self.path:
             next_point = self.path[0]
             d = np.subtract(next_point, self.agent.position)
@@ -64,14 +64,18 @@ class PathfinderGUI(object):
             int_y = int(new_position.y) - int(self.agent.position.y)
             self.agent = RectangularUnit(new_position, self.agent.size_x, self.agent.size_y)
             self.canvas.move(self.player_rectangle, int_x, int_y)
-        self.master.after(int(1000 / self.fps), self.animate)
 
-    def clicked(self, event):
-        print('Clicked: ', event.x, event.y)
-        start = time.time()
-        self.path = find_path(self.agent, Point(event.x, event.y), self.obstacles)
-        end = time.time()
-        print(end-start)
+        self.master.after(int(1000 / self.fps), self.move_agent_along_path)
+
+    def calculate_new_path(self, event):
+        print('Selected destination: ', event.x, event.y)
+        destination = Point(event.x, event.y)
+
+        time1 = time.time()
+        self.path = find_path(self.agent, destination, self.obstacles)
+        time2 = time.time()
+
+        print('Calculating path took %f s' % (time2 - time1))
 
     def close_window(self, event):
         self.master.destroy()
