@@ -70,7 +70,8 @@ def find_path_using_visibility_graph(start, destination, visibility_graph):
     estimated_distance[start] = distance_estimate(start, destination)
 
     while nodes_to_visit:
-        current_node = next(node for node in nodes_to_visit if estimated_distance[node] == min(estimated_distance[n] for n in nodes_to_visit))
+        min_estimated_distance = min(estimated_distance[n] for n in nodes_to_visit)
+        current_node = next(node for node in nodes_to_visit if estimated_distance[node] == min_estimated_distance)
         if current_node == destination:
             return reconstruct_path_to_point(destination, came_from_graph)
         nodes_to_visit.remove(current_node)
@@ -79,11 +80,11 @@ def find_path_using_visibility_graph(start, destination, visibility_graph):
             neighbour_node = adjacency.point
             if neighbour_node in visited_nodes:
                 continue
-            neighbour_node_g_score = distance_from_start[current_node] + adjacency.distance
-            if neighbour_node not in nodes_to_visit or neighbour_node_g_score < distance_from_start[neighbour_node]:
+            neighbour_distance = distance_from_start[current_node] + adjacency.distance
+            if neighbour_node not in nodes_to_visit or neighbour_distance < distance_from_start[neighbour_node]:
                 came_from_graph[neighbour_node] = current_node
-                distance_from_start[neighbour_node] = neighbour_node_g_score
-                estimated_distance[neighbour_node] = distance_from_start[neighbour_node] + distance_estimate(neighbour_node, destination)
+                distance_from_start[neighbour_node] = neighbour_distance
+                estimated_distance[neighbour_node] = neighbour_distance + distance_estimate(neighbour_node, destination)
                 if neighbour_node not in nodes_to_visit:
                     nodes_to_visit.add(neighbour_node)
     return None
