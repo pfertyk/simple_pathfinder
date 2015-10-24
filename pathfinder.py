@@ -17,13 +17,41 @@ Point = namedtuple('Point', 'x y')
 Adjacency = namedtuple('Adjacency', 'distance point')
 
 
-def find_path(unit, destination, obstacles):
-    new_obstacles = create_new_obstacles_for_size(unit.size_x, unit.size_y, obstacles)
+class Agent:
+    def __init__(self, position, size_x, size_y):
+        self.position = position
+        self.size_x = size_x
+        self.size_y = size_y
+        self.path = []
+        self.velocity = 8.0
+
+    def is_moving(self):
+        return bool(self.path)
+
+    def calculate_new_path(self, destination, obstacles):
+        self.path = find_path(self, destination, obstacles)
+
+    def move_along_path(self):
+        next_point = self.path[0]
+        d = np.subtract(next_point, self.position)
+        d_len = np.linalg.norm(d)
+
+        if d_len < self.velocity:
+            self.path.pop(0)
+        else:
+            d = np.divide(d, d_len)
+            d = np.multiply(d, self.velocity)
+
+        self.position = Point(*np.add(self.position, d))
+
+
+def find_path(agent, destination, obstacles):
+    new_obstacles = create_new_obstacles_for_size(agent.size_x, agent.size_y, obstacles)
     points = create_list_of_all_points(new_obstacles)
     connections = build_connections_graph(points, new_obstacles)
-    connections = add_to_connections(unit.position, new_obstacles, connections)
+    connections = add_to_connections(agent.position, new_obstacles, connections)
     connections = add_to_connections(destination, new_obstacles, connections)
-    path = find_path_using_graph(unit.position, destination, connections)
+    path = find_path_using_graph(agent.position, destination, connections)
     return path
 
 
@@ -170,21 +198,3 @@ def line_crosses_obstacle(p1, p2, obstacle):
                 tymax = np.multiply(ay, obstacle.up - e.y)
 
         return txmin < tymax and tymin < txmax and txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
-
-
-def move_point_along_the_path(point, path, velocity):
-    new_path = list(path)
-    next_point = new_path[0]
-    d = np.subtract(next_point, point)
-    d_len = np.linalg.norm(d)
-
-    if d_len < velocity:
-        new_path.pop(0)
-    else:
-        d = np.divide(d, d_len)
-        d = np.multiply(d, velocity)
-
-    new_position = np.add(point, d)
-    new_position = Point(*new_position)
-
-    return new_position, new_path
