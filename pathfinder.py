@@ -1,10 +1,8 @@
 from collections import namedtuple, defaultdict
+from functools import lru_cache
 import numpy as np
 import itertools
-from functools import lru_cache
 
-
-# TODO: eliminate duplicate points!
 Obstacle = namedtuple('Obstacle', 'up down left right')
 Point = namedtuple('Point', 'x y')
 Adjacency = namedtuple('Adjacency', 'distance point')
@@ -54,109 +52,94 @@ def find_path(current_position, destination, obstacles):
 
 
 def create_visibility_graph(current_position, destination, obstacles):
-    points = create_list_of_all_points(obstacles)
-    visibility_graph = build_connections_graph(points, obstacles)
-    visibility_graph = add_to_connections(current_position, obstacles, visibility_graph)
-    visibility_graph = add_to_connections(destination, obstacles, visibility_graph)
+    visibility_graph = create_visibility_graph_for_obstacles(obstacles)
+    add_vertex_to_visibility_graph(current_position, obstacles, visibility_graph)
+    add_vertex_to_visibility_graph(destination, obstacles, visibility_graph)
     return visibility_graph
 
 
-def find_path_using_visibility_graph(start, goal, connections):
-    closedset = set()
-    openset = set()
-    openset.add(start)
-    came_from = {}
+def find_path_using_visibility_graph(start, destination, visibility_graph):
+    nodes_to_visit = set()
+    nodes_to_visit.add(start)
+    visited_nodes = set()
+    came_from_graph = {}
 
-    g_score = defaultdict(lambda: float('inf'))
-    g_score[start] = 0
-    f_score = defaultdict(lambda: float('inf'))
-    f_score[start] = g_score[start] + heuristic_cost_estimate(start, goal)
+    distance_from_start = defaultdict(lambda: float('inf'))
+    distance_from_start[start] = 0
+    estimated_distance = defaultdict(lambda: float('inf'))
+    estimated_distance[start] = distance_estimate(start, destination)
 
-    while openset:
-        current = next(node for node in openset if f_score[node] == min(f_score[n] for n in openset))
-        if current == goal:
-            return reconstruct_path(came_from, goal)
-
-        openset.remove(current)
-        closedset.add(current)
-        for adjacency in connections[current]:
-            neighbour = adjacency.point
-            if neighbour in closedset:
+    while nodes_to_visit:
+        current_node = next(node for node in nodes_to_visit if estimated_distance[node] == min(estimated_distance[n] for n in nodes_to_visit))
+        if current_node == destination:
+            return reconstruct_path_to_point(destination, came_from_graph)
+        nodes_to_visit.remove(current_node)
+        visited_nodes.add(current_node)
+        for adjacency in visibility_graph[current_node]:
+            neighbour_node = adjacency.point
+            if neighbour_node in visited_nodes:
                 continue
-
-            tentative_g_score = g_score[current] + adjacency.distance
-
-            if neighbour not in openset or tentative_g_score < g_score[neighbour]:
-                came_from[neighbour] = current
-                g_score[neighbour] = tentative_g_score
-                f_score[neighbour] = g_score[neighbour] + heuristic_cost_estimate(neighbour, goal)
-                if neighbour not in openset:
-                    openset.add(neighbour)
-
+            neighbour_node_g_score = distance_from_start[current_node] + adjacency.distance
+            if neighbour_node not in nodes_to_visit or neighbour_node_g_score < distance_from_start[neighbour_node]:
+                came_from_graph[neighbour_node] = current_node
+                distance_from_start[neighbour_node] = neighbour_node_g_score
+                estimated_distance[neighbour_node] = distance_from_start[neighbour_node] + distance_estimate(neighbour_node, destination)
+                if neighbour_node not in nodes_to_visit:
+                    nodes_to_visit.add(neighbour_node)
     return None
 
 
-def reconstruct_path(came_from, current):
-    total_path = [current]
-    while current in came_from:
-        current = came_from[current]
-        total_path.insert(0, current)
-    total_path.pop(0)
-    return total_path
+def reconstruct_path_to_point(point, came_from_graph):
+    path = []
+    while point in came_from_graph:
+        path.insert(0, point)
+        point = came_from_graph[point]
+    return path
 
 
-def heuristic_cost_estimate(point, goal):
+@lru_cache(maxsize=128)
+def distance_estimate(point, goal):
     return np.linalg.norm(np.subtract(point, goal))
 
 
 @lru_cache(maxsize=8)
-def create_list_of_all_points(obstacles):
-    points = set()
+def get_all_vertices(obstacles):
+    vertices = set()
     for obs in obstacles:
-        points.update([Point(x, y) for x, y in itertools.product([obs.left, obs.right], [obs.up, obs.down])])
-    return tuple(points)
+        vertices.update([Point(x, y) for x, y in itertools.product([obs.left, obs.right], [obs.up, obs.down])])
+    return vertices
 
 
 @lru_cache(maxsize=8)
-def build_connections_graph(points, obstacles):
-    graph = {}
-    for point in points:
-        graph[point] = []
-
-    for i in range(len(points)):
-        for j in range(i + 1, len(points)):
-            p1 = points[i]
-            p2 = points[j]
-
-            crossed_obstacles = [obs for obs in obstacles if line_crosses_obstacle(p1, p2, obs)]
-            if not crossed_obstacles:
-                distance = np.linalg.norm(np.subtract(p1, p2))
-                graph[p1].append(Adjacency(distance, p2))
-                graph[p2].append(Adjacency(distance, p1))
-
+def create_visibility_graph_for_obstacles(obstacles):
+    vertices = get_all_vertices(obstacles)
+    visited_vertices = set()
+    graph = {v: [] for v in vertices}
+    for p1 in vertices:
+        visited_vertices.add(p1)
+        for p2 in vertices - visited_vertices:
+            check_connection_between_points(graph, obstacles, p1, p2)
     return graph
 
 
-def add_to_connections(point, obstacles, graph):
+def check_connection_between_points(graph, obstacles, point1, point2):
+    crossed_obstacles = [obs for obs in obstacles if line_crosses_obstacle(point1, point2, obs)]
+    if not crossed_obstacles:
+        distance = np.linalg.norm(np.subtract(point1, point2))
+        graph[point1].append(Adjacency(distance, point2))
+        graph[point2].append(Adjacency(distance, point1))
+
+
+def add_vertex_to_visibility_graph(point, obstacles, graph):
+    points = set(graph.keys())
     graph[point] = []
-    p1 = point
-
-    for p2 in graph.keys():
-        if p1 == p2:
-            continue
-        crossed_obstacles = [obs for obs in obstacles if line_crosses_obstacle(p1, p2, obs)]
-        if not crossed_obstacles:
-            distance = np.linalg.norm(np.subtract(p1, p2))
-            graph[p1].append(Adjacency(distance, p2))
-            graph[p2].append(Adjacency(distance, p1))
-
-    return graph
+    for existing_point in points:
+        check_connection_between_points(graph, obstacles, point, existing_point)
 
 
-def line_crosses_obstacle(p1, p2, obstacle):
+def line_crosses_obstacle(p1, p2, obstacle, threshold=1e-10):
         if p1 == p2:
             return False
-
         e = Point(*p1)
         d = np.subtract(p2, p1)
         d_len = np.linalg.norm(d)
@@ -181,4 +164,7 @@ def line_crosses_obstacle(p1, p2, obstacle):
                 tymin = np.multiply(ay, obstacle.down - e.y)
                 tymax = np.multiply(ay, obstacle.up - e.y)
 
-        return txmin < tymax - 1e-10 and tymin < txmax - 1e-10 and txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
+        intervals_intersect = txmin < tymax - threshold and tymin < txmax - threshold
+        intervals_are_valid = txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
+
+        return intervals_intersect and intervals_are_valid
