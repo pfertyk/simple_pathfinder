@@ -1,12 +1,12 @@
 from tkinter import *
-from pathfinder import Point, RectangularObstacle, RectangularUnit, find_path, move_point_along_the_path
+from pathfinder import Point, RectangularObstacle, RectangularAgent, find_path, move_point_along_the_path
 import time
 
 
 class PathfinderGUI(object):
     def __init__(self):
         self.obstacles = create_sample_obstacles()
-        self.agent = RectangularUnit(Point(30, 30), 25, 25)
+        self.agent = RectangularAgent(Point(30, 30), 25, 25)
         self.velocity = 8.0
         self.path = []
         self.fps = 25
@@ -17,14 +17,15 @@ class PathfinderGUI(object):
         self.master.bind('<Escape>', self.close_window)
 
         self.canvas = Canvas(self.master, width=800, height=600)
-        self.player_rectangle = self.canvas.create_rectangle(0, 0, 1, 1, fill='green', tags='agent')
         self.init_canvas()
 
         self.master.mainloop()
 
     def init_canvas(self):
+        self.canvas.create_rectangle(0, 0, 1, 1, fill='green', tags='agent')
         for ob in self.obstacles:
             self.canvas.create_rectangle(ob.left, ob.up, ob.right, ob.down, fill='blue')
+
         self.redraw_agent()
         self.canvas.pack()
         self.canvas.bind('<Button-1>', self.calculate_new_path)
@@ -44,7 +45,7 @@ class PathfinderGUI(object):
         if self.path:
             new_position, new_path = move_point_along_the_path(self.agent.position, self.path, self.velocity)
             self.path = new_path
-            self.agent = RectangularUnit(new_position, self.agent.size_x, self.agent.size_y)
+            self.agent = RectangularAgent(new_position, self.agent.size_x, self.agent.size_y)
             self.redraw_agent()
 
         if self.path:

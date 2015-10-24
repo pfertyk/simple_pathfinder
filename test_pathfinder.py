@@ -1,24 +1,24 @@
 from unittest import TestCase
-from pathfinder import RectangularObstacle, RectangularUnit, Point, find_path, line_crosses_obstacle
+from pathfinder import RectangularObstacle, RectangularAgent, Point, find_path, line_crosses_obstacle
 
 
 class TestFindingPath(TestCase):
     def test_no_obstacles(self):
-        unit = RectangularUnit(Point(0, 0), 0.5, 0.5)
+        unit = RectangularAgent(Point(0, 0), 0.5, 0.5)
         destination = Point(3, 0)
         obstacles = ()
         path = find_path(unit, destination, obstacles)
         self.assertEqual(path, [(3, 0)])
 
     def test_one_obstacle(self):
-        unit = RectangularUnit(Point(0, 0), 0.5, 0.5)
+        unit = RectangularAgent(Point(0, 0), 0.5, 0.5)
         destination = Point(5, 0)
         obstacles = tuple() + (RectangularObstacle(-3, 1, 2, 3), )
         path = find_path(unit, destination, obstacles)
         self.assertEquals(path, [Point(1.5, 1.5), Point(3.5, 1.5), Point(5, 0)])
 
     def test_no_path(self):
-        unit = RectangularUnit(Point(0, 0), 0.5, 0.5)
+        unit = RectangularAgent(Point(0, 0), 0.5, 0.5)
         destination = Point(3, 0)
         obstacles = (
             RectangularObstacle(-1, 1, 1, 2),
@@ -30,7 +30,7 @@ class TestFindingPath(TestCase):
         self.assertEquals(path, None)
 
     def test_two_obstacles(self):
-        unit = RectangularUnit(Point(0, 0), 0.5, 0.5)
+        unit = RectangularAgent(Point(0, 0), 0.5, 0.5)
         destination = Point(5, 0)
         obstacles = (
             RectangularObstacle(-3, 0.5, 1, 2),
@@ -40,7 +40,7 @@ class TestFindingPath(TestCase):
         self.assertEquals(path, [Point(0.5, 1), Point(2.5, 1), Point(2.5, -1), Point(4.5, -1), Point(5, 0)])
 
     def test_shortest_path(self):
-        unit = RectangularUnit(Point(750, 290), 25, 25)
+        unit = RectangularAgent(Point(750, 290), 25, 25)
         destination = Point(607, 324)
         obstacles = (
             RectangularObstacle(90, 300, 680, 700),

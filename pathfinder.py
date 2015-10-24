@@ -12,7 +12,7 @@ import functools
 # TODO: test: Clicked:  482 231
 # TODO: documentation!
 RectangularObstacle = namedtuple('RectangularObstacle', 'up down left right')
-RectangularUnit = namedtuple('RectangularUnit', 'position, size_x, size_y')
+RectangularAgent = namedtuple('RectangularUnit', 'position, size_x, size_y')
 Point = namedtuple('Point', 'x y')
 Adjacency = namedtuple('Adjacency', 'distance point')
 
@@ -27,7 +27,7 @@ def find_path(unit, destination, obstacles):
     return path
 
 
-def my_cache_wrapper(func):
+def cache_wrapper(func):
     cache = {}
 
     @functools.wraps(func)
@@ -89,7 +89,7 @@ def heuristic_cost_estimate(point, goal):
     return np.linalg.norm(np.subtract(point, goal))
 
 
-@my_cache_wrapper
+@cache_wrapper
 def create_new_obstacles_for_size(size_x, size_y, obstacles):
     new_obstacles = [
         RectangularObstacle(
@@ -99,7 +99,7 @@ def create_new_obstacles_for_size(size_x, size_y, obstacles):
     return tuple(new_obstacles)
 
 
-@my_cache_wrapper
+@cache_wrapper
 def create_list_of_all_points(obstacles):
     points = set()
     for obs in obstacles:
@@ -107,7 +107,7 @@ def create_list_of_all_points(obstacles):
     return tuple(points)
 
 
-@my_cache_wrapper
+@cache_wrapper
 def build_connections_graph(points, obstacles):
     graph = {}
     for point in points:
