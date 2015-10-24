@@ -9,6 +9,7 @@ class PathfinderGUI(object):
         self.agent = Agent(Point(30, 30), 25, 25)
         self.fps = 25
         self.is_animating = False
+        self.pre_calculate_paths()
 
         self.master = tkinter.Tk()
         self.master.wm_title('Left click to select destination, Esc to exit')
@@ -61,6 +62,9 @@ class PathfinderGUI(object):
 
     def close_window(self, event):
         self.master.destroy()
+
+    def pre_calculate_paths(self):
+        self.agent.calculate_new_path(self.agent.position, self.obstacles)
 
 
 def create_sample_obstacles():
