@@ -1,13 +1,10 @@
 from collections import namedtuple, defaultdict
 import numpy as np
 import itertools
-import functools
+from functools import lru_cache
+
 
 # TODO: eliminate duplicate points!
-# TODO: test: Clicked:  119 440 Clicked:  744 56 Clicked:  67 120 Clicked:  107 152 Clicked:  114 148 Clicked:  120 304
-# TODO: test: Clicked:  315 576 Clicked:  458 228 Clicked:  234 444
-# TODO: test: Clicked:  284 221
-# TODO: test: Clicked:  482 231
 Obstacle = namedtuple('Obstacle', 'up down left right')
 Point = namedtuple('Point', 'x y')
 Adjacency = namedtuple('Adjacency', 'distance point')
@@ -25,8 +22,17 @@ class Agent:
         return bool(self.path)
 
     def calculate_new_path(self, destination, obstacles):
-        obstacles = create_new_obstacles_for_size(self.size_x, self.size_y, obstacles)
+        obstacles = self.create_obstacles_in_configuration_space(obstacles)
         self.path = find_path(self.position, destination, obstacles)
+
+    @lru_cache(maxsize=8)
+    def create_obstacles_in_configuration_space(self, obstacles):
+        obstacles_in_configuration_space = [
+            Obstacle(
+                obs.up - self.size_y, obs.down + self.size_y,
+                obs.left - self.size_x, obs.right + self.size_x)
+            for obs in obstacles]
+        return tuple(obstacles_in_configuration_space)
 
     def move_along_path(self):
         next_point = self.path[0]
@@ -49,20 +55,6 @@ def find_path(current_position, destination, obstacles):
     connections = add_to_connections(destination, obstacles, connections)
     path = find_path_using_graph(current_position, destination, connections)
     return path
-
-
-def cache_wrapper(func):
-    cache = {}
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        if (func, args, str(kwargs)) in cache:
-            return cache[(func, args, str(kwargs))]
-        else:
-            tmp = func(*args, **kwargs)
-            cache[(func, args, str(kwargs))] = tmp
-            return tmp
-    return wrapper
 
 
 def find_path_using_graph(start, goal, connections):
@@ -113,17 +105,7 @@ def heuristic_cost_estimate(point, goal):
     return np.linalg.norm(np.subtract(point, goal))
 
 
-@cache_wrapper
-def create_new_obstacles_for_size(size_x, size_y, obstacles):
-    new_obstacles = [
-        Obstacle(
-            obs.up - size_y, obs.down + size_y,
-            obs.left - size_x, obs.right + size_x)
-        for obs in obstacles]
-    return tuple(new_obstacles)
-
-
-@cache_wrapper
+@lru_cache(maxsize=8)
 def create_list_of_all_points(obstacles):
     points = set()
     for obs in obstacles:
@@ -131,7 +113,7 @@ def create_list_of_all_points(obstacles):
     return tuple(points)
 
 
-@cache_wrapper
+@lru_cache(maxsize=8)
 def build_connections_graph(points, obstacles):
     graph = {}
     for point in points:
