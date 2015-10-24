@@ -1,8 +1,8 @@
 from unittest import TestCase
-from pathfinder import Obstacle, Point, find_path, line_crosses_obstacle
+from pathfinder import Obstacle, Point, find_path, line_crosses_obstacle, Agent
 
 
-class TestFindingPath(TestCase):
+class FindingPathTests(TestCase):
     def test_no_obstacles(self):
         position = Point(0, 0)
         destination = Point(3, 0)
@@ -57,7 +57,7 @@ class TestFindingPath(TestCase):
         self.assertEquals(path, None)
 
 
-class TestObstacleCrossing(TestCase):
+class ObstacleCrossingTests(TestCase):
     def test_through_the_middle(self):
         obstacle = Obstacle(1, 3, 1, 3)
         p1 = Point(0, 0)
@@ -185,3 +185,23 @@ class TestObstacleCrossing(TestCase):
 
         result = line_crosses_obstacle(p1, p2, obstacle)
         self.assertTrue(result)
+
+
+class AgentMovementTests(TestCase):
+    def test_destination_too_far(self):
+        agent = Agent(Point(0, 0), 1, 1, 1)
+        agent.path = [Point(10, 0)]
+
+        agent.move_along_path()
+
+        self.assertEqual(agent.path, [Point(10, 0)])
+        self.assertEqual(agent.position, Point(1, 0))
+
+    def test_destination_in_range(self):
+        agent = Agent(Point(0, 0), 1, 1, 20)
+        agent.path = [Point(10, 0)]
+
+        agent.move_along_path()
+
+        self.assertEqual(agent.path, [])
+        self.assertEqual(agent.position, Point(10, 0))

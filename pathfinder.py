@@ -14,12 +14,12 @@ Adjacency = namedtuple('Adjacency', 'distance point')
 
 
 class Agent:
-    def __init__(self, position, size_x, size_y):
+    def __init__(self, position, size_x, size_y, velocity=1.0):
         self.position = position
         self.size_x = size_x
         self.size_y = size_y
         self.path = []
-        self.velocity = 8.0
+        self.velocity = velocity
 
     def is_moving(self):
         return bool(self.path)

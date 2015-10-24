@@ -6,7 +6,7 @@ import time
 class PathfinderGUI(object):
     def __init__(self):
         self.obstacles = create_sample_obstacles()
-        self.agent = Agent(Point(30, 30), 25, 25)
+        self.agent = Agent(Point(30, 30), 25, 25, velocity=8)
         self.fps = 25
         self.is_animating = False
         self.pre_calculate_paths()
