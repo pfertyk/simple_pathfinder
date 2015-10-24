@@ -46,7 +46,7 @@ class FindingPathTests(TestCase):
         path = find_path(position, destination, obstacles)
         self.assertEquals(path, None)
 
-    def test_shortest_path_1(self):
+    def test_shortest_path_around_two_obstacles(self):
         position = Point(750, 290)
         destination = Point(607, 324)
         obstacles = (
@@ -56,7 +56,7 @@ class FindingPathTests(TestCase):
         path = find_path(position, destination, obstacles)
         self.assertEquals(path, [Point(725, 325), Point(655, 325), Point(607, 324)])
 
-    def test_shortest_path_2(self):
+    def test_shortest_path_around_large_obstacle(self):
         position = Point(425, 485)
         destination = Point(284, 221)
         obstacles = (Obstacle(265, 335, 265, 8000), )
@@ -203,7 +203,7 @@ class ObstacleCrossingTests(TestCase):
         self.assertFalse(result)
 
 
-class AgentMovementTests(TestCase):
+class AgentTests(TestCase):
     def test_destination_too_far(self):
         agent = Agent(Point(0, 0), 1, 1, 1)
         agent.path = [Point(10, 0)]
@@ -222,33 +222,22 @@ class AgentMovementTests(TestCase):
         self.assertEqual(agent.path, [])
         self.assertEqual(agent.position, Point(10, 0))
 
-    def test_complex_path_1(self):
+    def test_complex_path(self):
         agent = Agent(Point(725, 325), 25, 25)
         destination = Point(482, 231)
+        obstacles = (
+                Obstacle(70, 90, 70, 700),
+                Obstacle(90, 510, 70, 90),
+                Obstacle(510, 530, 70, 400),
+                Obstacle(90, 300, 680, 700),
+                Obstacle(370, 540, 680, 700),
+                Obstacle(150, 360, 160, 180),
+                Obstacle(150, 170, 180, 380),
+                Obstacle(150, 290, 380, 400),
+                Obstacle(290, 310, 290, 550),
+                Obstacle(310, 500, 500, 520),
+            )
 
-        agent.calculate_new_path(destination, create_sample_obstacles())
+        agent.calculate_new_path(destination, obstacles)
 
         self.assertEqual(agent.path, [Point(655, 325), Point(575, 265), Point(482, 231)])
-
-    def test_complex_path_2(self):
-        agent = Agent(Point(425, 485), 25, 25)
-        destination = Point(284, 221)
-
-        agent.calculate_new_path(destination, create_sample_obstacles())
-
-        self.assertEqual(agent.path, [Point(265, 335), Point(265, 265), Point(284, 221)])
-
-
-def create_sample_obstacles():
-    return (
-            Obstacle(70, 90, 70, 700),
-            Obstacle(90, 510, 70, 90),
-            Obstacle(510, 530, 70, 400),
-            Obstacle(90, 300, 680, 700),
-            Obstacle(370, 540, 680, 700),
-            Obstacle(150, 360, 160, 180),
-            Obstacle(150, 170, 180, 380),
-            Obstacle(150, 290, 380, 400),
-            Obstacle(290, 310, 290, 550),
-            Obstacle(310, 500, 500, 520),
-        )
