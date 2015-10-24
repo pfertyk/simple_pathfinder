@@ -6,4 +6,4 @@ The program assumes that all objects (both agent and obstacles) are represented 
 * **pathfinder.py** Contains actual pathfinding algorithm and all necessary data structures
 * **pathfinder_gui.py** Contains a simple gui with a set of obstacles and one agent
 
-More information about motion planning can be found [here](http://www.gamasutra.com/blogs/MatthewKlingensmith/20130907/199787/Overview_of_Motion_Planning.php)
+More information about motion planning can be found [here](http://www.gamasutra.com/blogs/MatthewKlingensmith/20130907/199787/Overview_of_Motion_Planning.php).
