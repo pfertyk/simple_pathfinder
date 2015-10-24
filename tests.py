@@ -13,7 +13,7 @@ class FindingPathTests(TestCase):
     def test_one_obstacle(self):
         position = Point(0, 0)
         destination = Point(5, 0)
-        obstacles = tuple() + (Obstacle(-3, 1, 2, 3), )
+        obstacles = (Obstacle(-3, 1, 2, 3), )
         path = find_path(position, destination, obstacles)
         self.assertEquals(path, [Point(2, 1), Point(3, 1), Point(5, 0)])
 
@@ -42,7 +42,7 @@ class FindingPathTests(TestCase):
     def test_destination_inside_obstacle(self):
         position = Point(4, 4)
         destination = Point(0, 0)
-        obstacles = tuple() + (Obstacle(-2, 2, -2, 2), )
+        obstacles = (Obstacle(-2, 2, -2, 2), )
         path = find_path(position, destination, obstacles)
         self.assertEquals(path, None)
 
@@ -59,7 +59,7 @@ class FindingPathTests(TestCase):
     def test_shortest_path_2(self):
         position = Point(425, 485)
         destination = Point(284, 221)
-        obstacles = tuple() + (Obstacle(265, 335, 265, 8000), )
+        obstacles = (Obstacle(265, 335, 265, 8000), )
         path = find_path(position, destination, obstacles)
         print(path)
         self.assertEquals(path, [Point(265, 335), Point(265, 265), Point(284, 221)])
