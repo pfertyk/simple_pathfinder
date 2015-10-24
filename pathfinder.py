@@ -3,16 +3,12 @@ import numpy as np
 import itertools
 import functools
 
-# TODO: better names for fields in Unit?
 # TODO: eliminate duplicate points!
-# TODO: test for destination inside obstacle
 # TODO: test: Clicked:  119 440 Clicked:  744 56 Clicked:  67 120 Clicked:  107 152 Clicked:  114 148 Clicked:  120 304
 # TODO: test: Clicked:  315 576 Clicked:  458 228 Clicked:  234 444
 # TODO: test: Clicked:  284 221
 # TODO: test: Clicked:  482 231
-# TODO: documentation!
-RectangularObstacle = namedtuple('RectangularObstacle', 'up down left right')
-RectangularAgent = namedtuple('RectangularUnit', 'position, size_x, size_y')
+Obstacle = namedtuple('Obstacle', 'up down left right')
 Point = namedtuple('Point', 'x y')
 Adjacency = namedtuple('Adjacency', 'distance point')
 
@@ -29,7 +25,8 @@ class Agent:
         return bool(self.path)
 
     def calculate_new_path(self, destination, obstacles):
-        self.path = find_path(self, destination, obstacles)
+        obstacles = create_new_obstacles_for_size(self.size_x, self.size_y, obstacles)
+        self.path = find_path(self.position, destination, obstacles)
 
     def move_along_path(self):
         next_point = self.path[0]
@@ -45,13 +42,12 @@ class Agent:
         self.position = Point(*np.add(self.position, d))
 
 
-def find_path(agent, destination, obstacles):
-    new_obstacles = create_new_obstacles_for_size(agent.size_x, agent.size_y, obstacles)
-    points = create_list_of_all_points(new_obstacles)
-    connections = build_connections_graph(points, new_obstacles)
-    connections = add_to_connections(agent.position, new_obstacles, connections)
-    connections = add_to_connections(destination, new_obstacles, connections)
-    path = find_path_using_graph(agent.position, destination, connections)
+def find_path(current_position, destination, obstacles):
+    points = create_list_of_all_points(obstacles)
+    connections = build_connections_graph(points, obstacles)
+    connections = add_to_connections(current_position, obstacles, connections)
+    connections = add_to_connections(destination, obstacles, connections)
+    path = find_path_using_graph(current_position, destination, connections)
     return path
 
 
@@ -120,7 +116,7 @@ def heuristic_cost_estimate(point, goal):
 @cache_wrapper
 def create_new_obstacles_for_size(size_x, size_y, obstacles):
     new_obstacles = [
-        RectangularObstacle(
+        Obstacle(
             obs.up - size_y, obs.down + size_y,
             obs.left - size_x, obs.right + size_x)
         for obs in obstacles]

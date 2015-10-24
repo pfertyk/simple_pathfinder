@@ -1,4 +1,4 @@
-from pathfinder import Point, RectangularObstacle, Agent
+from pathfinder import Point, Obstacle, Agent
 import tkinter
 import time
 
@@ -65,16 +65,16 @@ class PathfinderGUI(object):
 
 def create_sample_obstacles():
     return (
-            RectangularObstacle(70, 90, 70, 700),
-            RectangularObstacle(90, 510, 70, 90),
-            RectangularObstacle(510, 530, 70, 400),
-            RectangularObstacle(90, 300, 680, 700),
-            RectangularObstacle(370, 540, 680, 700),
-            RectangularObstacle(150, 360, 160, 180),
-            RectangularObstacle(150, 170, 180, 380),
-            RectangularObstacle(150, 290, 380, 400),
-            RectangularObstacle(290, 310, 290, 550),
-            RectangularObstacle(310, 500, 500, 520),
+            Obstacle(70, 90, 70, 700),
+            Obstacle(90, 510, 70, 90),
+            Obstacle(510, 530, 70, 400),
+            Obstacle(90, 300, 680, 700),
+            Obstacle(370, 540, 680, 700),
+            Obstacle(150, 360, 160, 180),
+            Obstacle(150, 170, 180, 380),
+            Obstacle(150, 290, 380, 400),
+            Obstacle(290, 310, 290, 550),
+            Obstacle(310, 500, 500, 520),
         )
 
 
