@@ -36,16 +36,15 @@ class Agent:
 
     def move_along_path(self):
         next_point = self.path[0]
-        d = np.subtract(next_point, self.position)
-        d_len = np.linalg.norm(d)
+        next_point_delta = np.subtract(next_point, self.position)
+        distance_to_next_point = np.linalg.norm(next_point_delta)
 
-        if d_len < self.velocity:
-            self.path.pop(0)
+        if distance_to_next_point < self.velocity:
+            self.position = self.path.pop(0)
         else:
-            d = np.divide(d, d_len)
-            d = np.multiply(d, self.velocity)
-
-        self.position = Point(*np.add(self.position, d))
+            velocity_vector = np.multiply(next_point_delta, self.velocity / distance_to_next_point)
+            new_position = np.add(self.position, velocity_vector)
+            self.position = Point(*new_position)
 
 
 def find_path(current_position, destination, obstacles):
