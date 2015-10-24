@@ -194,6 +194,14 @@ class ObstacleCrossingTests(TestCase):
         result = line_crosses_obstacle(p1, p2, obstacle)
         self.assertTrue(result)
 
+    def test_large_obstacle(self):
+        obstacle = Obstacle(265, 335, 265, 8000)
+        p1 = Point(284, 221)
+        p2 = Point(265, 265)
+
+        result = line_crosses_obstacle(p1, p2, obstacle)
+        self.assertFalse(result)
+
 
 class AgentMovementTests(TestCase):
     def test_destination_too_far(self):

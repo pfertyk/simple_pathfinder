@@ -48,15 +48,20 @@ class Agent:
 
 
 def find_path(current_position, destination, obstacles):
-    points = create_list_of_all_points(obstacles)
-    connections = build_connections_graph(points, obstacles)
-    connections = add_to_connections(current_position, obstacles, connections)
-    connections = add_to_connections(destination, obstacles, connections)
-    path = find_path_using_graph(current_position, destination, connections)
+    visibility_graph = create_visibility_graph(current_position, destination, obstacles)
+    path = find_path_using_visibility_graph(current_position, destination, visibility_graph)
     return path
 
 
-def find_path_using_graph(start, goal, connections):
+def create_visibility_graph(current_position, destination, obstacles):
+    points = create_list_of_all_points(obstacles)
+    visibility_graph = build_connections_graph(points, obstacles)
+    visibility_graph = add_to_connections(current_position, obstacles, visibility_graph)
+    visibility_graph = add_to_connections(destination, obstacles, visibility_graph)
+    return visibility_graph
+
+
+def find_path_using_visibility_graph(start, goal, connections):
     closedset = set()
     openset = set()
     openset.add(start)
@@ -134,9 +139,11 @@ def build_connections_graph(points, obstacles):
 
 def add_to_connections(point, obstacles, graph):
     graph[point] = []
-
     p1 = point
+
     for p2 in graph.keys():
+        if p1 == p2:
+            continue
         crossed_obstacles = [obs for obs in obstacles if line_crosses_obstacle(p1, p2, obs)]
         if not crossed_obstacles:
             distance = np.linalg.norm(np.subtract(p1, p2))
@@ -174,4 +181,4 @@ def line_crosses_obstacle(p1, p2, obstacle):
                 tymin = np.multiply(ay, obstacle.down - e.y)
                 tymax = np.multiply(ay, obstacle.up - e.y)
 
-        return txmin < tymax and tymin < txmax and txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
+        return txmin < tymax - 1e-10 and tymin < txmax - 1e-10 and txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
