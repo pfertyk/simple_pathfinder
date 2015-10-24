@@ -9,6 +9,16 @@ Adjacency = namedtuple('Adjacency', 'distance point')
 
 
 class Agent:
+    """
+    Represents a rectangular Agent moving among rectangular obstacles.
+
+    The position of the Agent is located in the center of his rectangle.
+    The value of size_x represents the distance from Agent's position
+    to both the left and right side of that rectangle. Similarly, the
+    value of size_y represents the distance from Agent's position to
+    both the upper and lower side of that rectangle. Therefore, the
+    dimension of the Agent's rectangle is (2*size_x, 2*size_y).
+    """
     def __init__(self, position, size_x, size_y, velocity=1.0):
         self.position = position
         self.size_x = size_x
@@ -25,6 +35,13 @@ class Agent:
 
     @lru_cache(maxsize=8)
     def create_obstacles_in_configuration_space(self, obstacles):
+        """
+        Creates new 'inflated' obstacles.
+
+        Each obstacle is transformed by increasing its size by the size
+        of the Agent. That allows the Agent to be represented as a single
+        point instead of a rectangle.
+        """
         obstacles_in_configuration_space = [
             Obstacle(
                 obs.up - self.size_y, obs.down + self.size_y,
@@ -33,6 +50,18 @@ class Agent:
         return tuple(obstacles_in_configuration_space)
 
     def move_along_path(self):
+        """
+        Moves the Agent and updates his path.
+
+        Takes the next point of current path. If that point is close enough
+        (within one velocity distance), moves the agent to that point and
+        removes the point from path. Otherwise moves the agent by one velocity
+        distance toward that point.
+
+        If the path is empty, the method doesn't do anything.
+        """
+        if not self.path:
+            return
         next_point = self.path[0]
         next_point_delta = np.subtract(next_point, self.position)
         distance_to_next_point = np.linalg.norm(next_point_delta)
@@ -59,6 +88,9 @@ def create_visibility_graph(current_position, destination, obstacles):
 
 
 def find_path_using_visibility_graph(start, destination, visibility_graph):
+    """
+    Finds path from start to destination using visibility graph and A* algorithm.
+    """
     nodes_to_visit = set()
     nodes_to_visit.add(start)
     visited_nodes = set()
@@ -113,6 +145,16 @@ def get_all_vertices(obstacles):
 
 @lru_cache(maxsize=8)
 def create_visibility_graph_for_obstacles(obstacles):
+    """
+    Creates a visibility graph only for given obstacles (with no start and destination).
+
+    This was extracted as a separate method to allow caching.
+    Obstacles in this program are considered immutable: no new
+    obstacles appear and the existing ones do not move. Therefore,
+    there is no reason to calculate the visibility graph for
+    obstacles more than once. However, the start and destination
+    change very often, so visibility for them is calculated using another method.
+    """
     vertices = get_all_vertices(obstacles)
     visited_vertices = set()
     graph = {v: [] for v in vertices}
@@ -124,6 +166,9 @@ def create_visibility_graph_for_obstacles(obstacles):
 
 
 def check_connection_between_points(graph, obstacles, point1, point2):
+    """
+    Checks if there is an unobstructed line between point1 and point2. If so, adds the connection to graph.
+    """
     crossed_obstacles = [obs for obs in obstacles if line_crosses_obstacle(point1, point2, obs)]
     if not crossed_obstacles:
         distance = np.linalg.norm(np.subtract(point1, point2))
@@ -138,34 +183,42 @@ def add_vertex_to_visibility_graph(point, obstacles, graph):
         check_connection_between_points(graph, obstacles, point, existing_point)
 
 
-def line_crosses_obstacle(p1, p2, obstacle, threshold=1e-10):
-        if p1 == p2:
-            return False
-        e = Point(*p1)
-        d = np.subtract(p2, p1)
-        d_len = np.linalg.norm(d)
-        d = np.divide(d, d_len)
-        d = Point(*d)
+def line_crosses_obstacle(point1, point2, obstacle, threshold=1e-10):
+    """
+    Checks if a line between 2 points crosses an obstacle.
 
-        with np.errstate(divide='ignore', invalid='ignore'):
-            ax = np.divide(1, d.x)
-            ay = np.divide(1, d.y)
+    Line that overlaps the obstacle's side or shares only
+    one point with the obstacle (e.g. one point is outside
+    the obstacle and the other is in its vertex) is not
+    considered to cross that obstacle.
+    """
+    if point1 == point2:
+        return False
+    e = Point(*point1)
+    d = np.subtract(point2, point1)
+    d_len = np.linalg.norm(d)
+    d = np.divide(d, d_len)
+    d = Point(*d)
 
-            if ax >= 0:
-                txmin = np.multiply(ax, obstacle.left - e.x)
-                txmax = np.multiply(ax, obstacle.right - e.x)
-            else:
-                txmin = np.multiply(ax, obstacle.right - e.x)
-                txmax = np.multiply(ax, obstacle.left - e.x)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        ax = np.divide(1, d.x)
+        ay = np.divide(1, d.y)
 
-            if ay >= 0:
-                tymin = np.multiply(ay, obstacle.up - e.y)
-                tymax = np.multiply(ay, obstacle.down - e.y)
-            else:
-                tymin = np.multiply(ay, obstacle.down - e.y)
-                tymax = np.multiply(ay, obstacle.up - e.y)
+        if ax >= 0:
+            txmin = np.multiply(ax, obstacle.left - e.x)
+            txmax = np.multiply(ax, obstacle.right - e.x)
+        else:
+            txmin = np.multiply(ax, obstacle.right - e.x)
+            txmax = np.multiply(ax, obstacle.left - e.x)
 
-        intervals_intersect = txmin < tymax - threshold and tymin < txmax - threshold
-        intervals_are_valid = txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
+        if ay >= 0:
+            tymin = np.multiply(ay, obstacle.up - e.y)
+            tymax = np.multiply(ay, obstacle.down - e.y)
+        else:
+            tymin = np.multiply(ay, obstacle.down - e.y)
+            tymax = np.multiply(ay, obstacle.up - e.y)
 
-        return intervals_intersect and intervals_are_valid
+    intervals_intersect = txmin < tymax - threshold and tymin < txmax - threshold
+    intervals_are_valid = txmin < d_len and tymin < d_len and txmax > 0 and tymax > 0
+
+    return intervals_intersect and intervals_are_valid
