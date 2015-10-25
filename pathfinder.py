@@ -27,9 +27,15 @@ class Agent:
         self.velocity = velocity
 
     def is_moving(self):
+        """
+        Checks if the Agent is moving (if he has a path to follow).
+        """
         return bool(self.path)
 
     def calculate_new_path(self, destination, obstacles):
+        """
+        Calculates new path from Agent's current position to given destination and stores this path.
+        """
         obstacles = self.create_obstacles_in_configuration_space(obstacles)
         self.path = find_path(self.position, destination, obstacles)
 
@@ -74,15 +80,40 @@ class Agent:
             self.position = Point(*new_position)
 
 
-def find_path(current_position, destination, obstacles):
-    visibility_graph = create_visibility_graph(current_position, destination, obstacles)
-    path = find_path_using_visibility_graph(current_position, destination, visibility_graph)
+def find_path(start, destination, obstacles):
+    """
+    Calculates the path between start and destination, avoiding the obstacles.
+
+    Both the start and the destination are considered to be points
+    (with no dimensions). Returned path is a list of points that need
+    to be visited (in order) to reach from start to destination.
+    The path does not contain the starting point, since that point
+    is already visited. The path contains the destination as its
+    last element.
+    """
+    visibility_graph = create_visibility_graph(start, destination, obstacles)
+    path = find_path_using_visibility_graph(start, destination, visibility_graph)
     return path
 
 
-def create_visibility_graph(current_position, destination, obstacles):
+def create_visibility_graph(start, destination, obstacles):
+    """
+    Creates a visibility graph.
+
+    The graph is a dictionary. The key set contains all the vertices
+    (corners) of all the obstacles as well as start and destination
+    points. The value for each key is a list of adjacent points and
+    distances to those points. Each entry on the list is in a form
+    of a tuple containing a distance and a point. A point is
+    considered adjacent to a given one if there is an unobstructed
+    line between them (if the line does not intersect with any
+    obstacle). If a list of adjacent points for p1 contains p2,
+    then the list of adjacent points for p2 will contain p1. The
+    list of adjacent points might be empty, if the point has no
+    adjacent ones.
+    """
     visibility_graph = create_visibility_graph_for_obstacles(obstacles)
-    add_vertex_to_visibility_graph(current_position, obstacles, visibility_graph)
+    add_vertex_to_visibility_graph(start, obstacles, visibility_graph)
     add_vertex_to_visibility_graph(destination, obstacles, visibility_graph)
     return visibility_graph
 
@@ -123,6 +154,12 @@ def find_path_using_visibility_graph(start, destination, visibility_graph):
 
 
 def reconstruct_path_to_point(point, came_from_graph):
+    """
+    Creates a path from start to destination.
+
+    Uses the graph (dictionary) of preceding nodes (created by A* algorithm).
+    The path does not contain a starting point.
+    """
     path = []
     while point in came_from_graph:
         path.insert(0, point)
@@ -132,11 +169,17 @@ def reconstruct_path_to_point(point, came_from_graph):
 
 @lru_cache(maxsize=128)
 def distance_estimate(point, goal):
+    """
+    Returns Euclidean distance between given points.
+    """
     return np.linalg.norm(np.subtract(point, goal))
 
 
 @lru_cache(maxsize=8)
 def get_all_vertices(obstacles):
+    """
+    Returns a set of all vertices (corners) of given obstacles.
+    """
     vertices = set()
     for obs in obstacles:
         vertices.update([Point(x, y) for x, y in itertools.product([obs.left, obs.right], [obs.up, obs.down])])
@@ -167,7 +210,7 @@ def create_visibility_graph_for_obstacles(obstacles):
 
 def check_connection_between_points(graph, obstacles, point1, point2):
     """
-    Checks if there is an unobstructed line between point1 and point2. If so, adds the connection to graph.
+    Checks if there is an unobstructed line between point1 and point2. If so, adds the adjacency to graph.
     """
     crossed_obstacles = [obs for obs in obstacles if line_crosses_obstacle(point1, point2, obs)]
     if not crossed_obstacles:
@@ -177,6 +220,9 @@ def check_connection_between_points(graph, obstacles, point1, point2):
 
 
 def add_vertex_to_visibility_graph(point, obstacles, graph):
+    """
+    Adds one vertex to visibility graph and calculates adjacent points for it.
+    """
     points = set(graph.keys())
     graph[point] = []
     for existing_point in points:
